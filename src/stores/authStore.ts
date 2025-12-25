@@ -1,0 +1,157 @@
+import { create } from 'zustand'
+import { persist } from 'zustand/middleware'
+import type { User } from '@/types'
+import { authApi } from '@/services/api'
+import {
+  signInWithEmail,
+  signUpWithEmail,
+  signInWithGoogle,
+  logOut,
+  onAuthChange,
+  type FirebaseUser,
+} from '@/config/firebase'
+
+interface AuthState {
+  user: User | null
+  token: string | null
+  isLoading: boolean
+  isAuthenticated: boolean
+  error: string | null
+  login: (email: string, password: string) => Promise<void>
+  register: (email: string, password: string, name: string) => Promise<void>
+  loginWithGoogle: () => Promise<void>
+  logout: () => Promise<void>
+  setUser: (user: User | null) => void
+  setToken: (token: string | null) => void
+  checkAuth: () => Promise<void>
+  initializeAuth: () => () => void
+  clearError: () => void
+}
+
+export const useAuthStore = create<AuthState>()(
+  persist(
+    (set, get) => ({
+      user: null,
+      token: null,
+      isLoading: true,
+      isAuthenticated: false,
+      error: null,
+
+      setUser: (user) => set({ user, isAuthenticated: !!user }),
+      setToken: (token) => {
+        if (token) {
+          localStorage.setItem('token', token)
+        } else {
+          localStorage.removeItem('token')
+        }
+        set({ token })
+      },
+      clearError: () => set({ error: null }),
+
+      login: async (email: string, password: string) => {
+        set({ isLoading: true, error: null })
+        try {
+          const firebaseResult = await signInWithEmail(email, password)
+          const response = await authApi.login({
+            email,
+            firebaseUid: firebaseResult.user.uid,
+          })
+          const { user, token } = response.data.data
+          get().setToken(token)
+          set({ user, isAuthenticated: true, isLoading: false })
+        } catch (error: unknown) {
+          const message = error instanceof Error ? error.message : 'Login failed'
+          set({ error: message, isLoading: false })
+          throw error
+        }
+      },
+
+      register: async (email: string, password: string, name: string) => {
+        set({ isLoading: true, error: null })
+        try {
+          const firebaseResult = await signUpWithEmail(email, password)
+          const response = await authApi.register({
+            email,
+            name,
+            firebaseUid: firebaseResult.user.uid,
+          })
+          const { user, token } = response.data.data
+          get().setToken(token)
+          set({ user, isAuthenticated: true, isLoading: false })
+        } catch (error: unknown) {
+          const message = error instanceof Error ? error.message : 'Registration failed'
+          set({ error: message, isLoading: false })
+          throw error
+        }
+      },
+
+      loginWithGoogle: async () => {
+        set({ isLoading: true, error: null })
+        try {
+          const firebaseResult = await signInWithGoogle()
+          const response = await authApi.login({
+            email: firebaseResult.user.email!,
+            firebaseUid: firebaseResult.user.uid,
+          })
+          const { user, token } = response.data.data
+          get().setToken(token)
+          set({ user, isAuthenticated: true, isLoading: false })
+        } catch (error: unknown) {
+          const message = error instanceof Error ? error.message : 'Google login failed'
+          set({ error: message, isLoading: false })
+          throw error
+        }
+      },
+
+      logout: async () => {
+        try {
+          await logOut()
+        } catch (error) {
+          console.error('Firebase logout error:', error)
+        }
+        get().setToken(null)
+        set({ user: null, isAuthenticated: false })
+      },
+
+      checkAuth: async () => {
+        const token = localStorage.getItem('token')
+        if (!token) {
+          set({ isLoading: false, isAuthenticated: false })
+          return
+        }
+        try {
+          const response = await authApi.getMe()
+          set({
+            user: response.data.data,
+            isAuthenticated: true,
+            isLoading: false,
+            token,
+          })
+        } catch {
+          get().setToken(null)
+          set({ user: null, isAuthenticated: false, isLoading: false })
+        }
+      },
+
+      initializeAuth: () => {
+        const unsubscribe = onAuthChange(async (firebaseUser: FirebaseUser | null) => {
+          if (firebaseUser) {
+            const token = localStorage.getItem('token')
+            if (token) {
+              await get().checkAuth()
+            }
+          } else {
+            set({ isLoading: false })
+          }
+        })
+        return unsubscribe
+      },
+    }),
+    {
+      name: 'auth-storage',
+      partialize: (state) => ({
+        token: state.token,
+      }),
+    }
+  )
+)
