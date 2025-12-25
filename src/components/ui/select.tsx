@@ -63,14 +63,17 @@ const SelectTrigger = React.forwardRef<
       ref={ref}
       type="button"
       className={cn(
-        'flex h-9 w-full items-center justify-between whitespace-nowrap rounded-md border border-input bg-transparent px-3 py-2 text-sm shadow-sm ring-offset-background placeholder:text-muted-foreground focus:outline-none focus:ring-1 focus:ring-ring disabled:cursor-not-allowed disabled:opacity-50 [&>span]:line-clamp-1',
+        'flex h-10 sm:h-11 w-full items-center justify-between whitespace-nowrap rounded-xl border-2 border-input bg-background px-3 sm:px-4 py-2 text-sm shadow-sm ring-offset-background transition-all duration-200 placeholder:text-muted-foreground hover:border-primary/50 focus:outline-none focus:ring-2 focus:ring-ring focus:border-primary disabled:cursor-not-allowed disabled:opacity-50 [&>span]:line-clamp-1',
         className
       )}
       onClick={() => context.setOpen(!context.open)}
       {...props}
     >
       {children}
-      <ChevronDown className="h-4 w-4 opacity-50" />
+      <ChevronDown className={cn(
+        'h-4 w-4 opacity-50 transition-transform duration-200',
+        context.open && 'rotate-180'
+      )} />
     </button>
   )
 })
@@ -108,12 +111,12 @@ const SelectContent = React.forwardRef<
       <div
         ref={ref}
         className={cn(
-          'absolute z-50 mt-1 max-h-60 w-full overflow-auto rounded-md border bg-popover text-popover-foreground shadow-md',
+          'absolute z-50 mt-2 max-h-60 w-full overflow-auto rounded-xl border-2 bg-popover text-popover-foreground shadow-xl animate-in fade-in-0 zoom-in-95 duration-200',
           className
         )}
         {...props}
       >
-        {children}
+        <div className="p-1">{children}</div>
       </div>
     </>
   )
@@ -141,8 +144,8 @@ const SelectItem = React.forwardRef<
     <div
       ref={ref}
       className={cn(
-        'relative flex w-full cursor-pointer select-none items-center rounded-sm py-1.5 px-2 text-sm outline-none hover:bg-accent hover:text-accent-foreground focus:bg-accent focus:text-accent-foreground',
-        isSelected && 'bg-accent',
+        'relative flex w-full cursor-pointer select-none items-center rounded-lg py-2 px-3 text-sm outline-none transition-colors hover:bg-accent hover:text-accent-foreground focus:bg-accent focus:text-accent-foreground',
+        isSelected && 'bg-accent font-semibold',
         className
       )}
       onClick={() => {
@@ -152,7 +155,7 @@ const SelectItem = React.forwardRef<
       {...props}
     >
       <span className="flex-1">{children}</span>
-      {isSelected && <Check className="h-4 w-4 ml-2" />}
+      {isSelected && <Check className="h-4 w-4 ml-2 text-primary" />}
     </div>
   )
 })

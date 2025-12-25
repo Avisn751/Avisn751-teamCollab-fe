@@ -9,7 +9,7 @@ import { Input } from '@/components/ui/input'
 import { Avatar, AvatarFallback } from '@/components/ui/avatar'
 import { ScrollArea } from '@/components/ui/scroll-area'
 import { Loading } from '@/components/ui/loading'
-import { Send, MessageSquare } from 'lucide-react'
+import { Send, MessageSquare, Smile, Loader2 } from 'lucide-react'
 import { format, isToday, isYesterday } from 'date-fns'
 
 export default function Chat() {
@@ -161,45 +161,61 @@ export default function Chat() {
   }
 
   return (
-    <div className="flex h-[calc(100vh-10rem)] flex-col">
-      <div className="mb-4">
-        <h2 className="text-3xl font-bold tracking-tight">Team Chat</h2>
-        <p className="text-muted-foreground">
-          Communicate with your team in real-time
-        </p>
+    <div className="flex h-[calc(100vh-8rem)] sm:h-[calc(100vh-10rem)] flex-col animate-in fade-in-0 duration-500">
+      <div className="mb-4 sm:mb-6">
+        <div className="flex items-center gap-3">
+          <div className="h-12 w-12 rounded-2xl bg-gradient-to-br from-blue-500 to-blue-600 flex items-center justify-center shadow-lg shadow-blue-500/25">
+            <MessageSquare className="h-6 w-6 text-white" />
+          </div>
+          <div>
+            <h2 className="text-3xl sm:text-4xl font-bold tracking-tight">Team Chat</h2>
+            <p className="text-muted-foreground text-sm sm:text-base">
+              Communicate with your team in real-time
+            </p>
+          </div>
+        </div>
       </div>
 
-      <Card className="flex flex-1 flex-col overflow-hidden">
-        <CardHeader className="border-b py-3">
-          <CardTitle className="flex items-center gap-2 text-lg">
-            <MessageSquare className="h-5 w-5" />
+      <Card className="flex flex-1 flex-col overflow-hidden border-2 shadow-xl">
+        <CardHeader className="border-b py-3 sm:py-4 bg-gradient-to-r from-card to-card/50">
+          <CardTitle className="flex items-center gap-2 text-base sm:text-lg">
+            <div className="h-8 w-8 rounded-lg bg-gradient-to-br from-blue-500 to-blue-600 flex items-center justify-center">
+              <MessageSquare className="h-4 w-4 text-white" />
+            </div>
             Team Chat
+            {messages.length > 0 && (
+              <span className="ml-auto text-xs sm:text-sm text-muted-foreground font-normal">
+                {messages.length} messages
+              </span>
+            )}
           </CardTitle>
         </CardHeader>
 
         <CardContent className="flex-1 overflow-hidden p-0">
-          <ScrollArea className="h-full p-4">
+          <ScrollArea className="h-full p-3 sm:p-4">
             {messages.length === 0 ? (
-              <div className="flex h-full flex-col items-center justify-center text-center">
-                <MessageSquare className="h-12 w-12 text-muted-foreground mb-4" />
-                <h3 className="text-lg font-semibold">No messages yet</h3>
-                <p className="text-muted-foreground">
-                  Start the conversation with your team
+              <div className="flex h-full flex-col items-center justify-center text-center px-4">
+                <div className="h-20 w-20 rounded-2xl bg-blue-500/10 flex items-center justify-center mb-6">
+                  <MessageSquare className="h-10 w-10 text-blue-500" />
+                </div>
+                <h3 className="text-lg sm:text-xl font-bold mb-2">No messages yet</h3>
+                <p className="text-muted-foreground text-sm sm:text-base max-w-sm">
+                  Start the conversation with your team and collaborate in real-time!
                 </p>
               </div>
             ) : (
-              <div className="space-y-6">
+              <div className="space-y-6 sm:space-y-8">
                 {messageGroups.map((group) => (
                   <div key={group.date}>
-                    <div className="relative flex items-center py-2">
-                      <div className="flex-grow border-t" />
-                      <span className="mx-4 text-xs text-muted-foreground">
+                    <div className="relative flex items-center py-3 sm:py-4">
+                      <div className="flex-grow border-t-2" />
+                      <span className="mx-3 sm:mx-4 text-xs sm:text-sm text-muted-foreground font-semibold px-3 py-1 bg-muted/50 rounded-full">
                         {group.date}
                       </span>
-                      <div className="flex-grow border-t" />
+                      <div className="flex-grow border-t-2" />
                     </div>
 
-                    <div className="space-y-4">
+                    <div className="space-y-3 sm:space-y-4">
                       {group.messages.map((message) => {
                         const isOwnMessage =
                           (message.senderId?._id || message.senderId?.id) ===
@@ -208,17 +224,25 @@ export default function Chat() {
                         return (
                           <div
                             key={message._id || message.id}
-                            className={`flex items-start gap-3 ${
+                            className={`flex items-start gap-2 sm:gap-3 animate-in slide-in-from-bottom-2 duration-300 ${
                               isOwnMessage ? 'flex-row-reverse' : ''
                             }`}
                           >
-                            <Avatar className="h-8 w-8 shrink-0">
-                              <AvatarFallback className="text-xs">
+                            <Avatar className={`h-8 w-8 sm:h-10 sm:w-10 shrink-0 ring-2 ${
+                              isOwnMessage 
+                                ? 'ring-primary/20' 
+                                : 'ring-blue-500/20'
+                            }`}>
+                              <AvatarFallback className={`text-xs sm:text-sm font-semibold ${
+                                isOwnMessage
+                                  ? 'bg-gradient-to-br from-primary to-primary/80 text-primary-foreground'
+                                  : 'bg-gradient-to-br from-blue-500 to-blue-600 text-white'
+                              }`}>
                                 {getInitials(message.senderId?.name || 'U')}
                               </AvatarFallback>
                             </Avatar>
                             <div
-                              className={`max-w-[70%] ${
+                              className={`flex flex-col max-w-[75%] sm:max-w-[70%] ${
                                 isOwnMessage ? 'items-end' : 'items-start'
                               }`}
                             >
@@ -227,23 +251,23 @@ export default function Chat() {
                                   isOwnMessage ? 'flex-row-reverse' : ''
                                 }`}
                               >
-                                <span className="text-sm font-medium">
+                                <span className="text-xs sm:text-sm font-semibold">
                                   {isOwnMessage
                                     ? 'You'
                                     : message.senderId?.name || 'Unknown'}
                                 </span>
-                                <span className="text-xs text-muted-foreground">
+                                <span className="text-[10px] sm:text-xs text-muted-foreground">
                                   {formatMessageTime(message.timestamp)}
                                 </span>
                               </div>
                               <div
-                                className={`rounded-lg px-4 py-2 ${
+                                className={`rounded-2xl px-3 sm:px-4 py-2 sm:py-3 shadow-md hover:shadow-lg transition-all duration-200 ${
                                   isOwnMessage
-                                    ? 'bg-primary text-primary-foreground'
-                                    : 'bg-muted'
+                                    ? 'bg-gradient-to-br from-primary to-primary/90 text-primary-foreground'
+                                    : 'bg-gradient-to-br from-muted to-muted/50 border-2 border-blue-500/10'
                                 }`}
                               >
-                                <p className="text-sm whitespace-pre-wrap break-words">
+                                <p className="text-sm sm:text-base whitespace-pre-wrap break-words leading-relaxed">
                                   {message.content}
                                 </p>
                               </div>
@@ -260,11 +284,18 @@ export default function Chat() {
           </ScrollArea>
         </CardContent>
 
-        <div className="border-t p-4">
+        <div className="border-t-2 p-3 sm:p-4 bg-gradient-to-r from-card to-card/50">
           {typingUsers.length > 0 && (
-            <div className="mb-2 text-xs text-muted-foreground animate-pulse">
-              {typingUsers.map((u) => u.userName).join(', ')}{' '}
-              {typingUsers.length === 1 ? 'is' : 'are'} typing...
+            <div className="mb-2 sm:mb-3 flex items-center gap-2 text-xs sm:text-sm text-muted-foreground">
+              <div className="flex gap-1">
+                <span className="w-2 h-2 bg-blue-500 rounded-full animate-bounce" />
+                <span className="w-2 h-2 bg-blue-500 rounded-full animate-bounce delay-75" style={{ animationDelay: '0.1s' }} />
+                <span className="w-2 h-2 bg-blue-500 rounded-full animate-bounce delay-150" style={{ animationDelay: '0.2s' }} />
+              </div>
+              <span>
+                {typingUsers.map((u) => u.userName).join(', ')}{' '}
+                {typingUsers.length === 1 ? 'is' : 'are'} typing...
+              </span>
             </div>
           )}
           <form onSubmit={handleSend} className="flex gap-2">
@@ -278,8 +309,17 @@ export default function Chat() {
               disabled={isSending}
               className="flex-1"
             />
-            <Button type="submit" disabled={!newMessage.trim() || isSending}>
-              <Send className="h-4 w-4" />
+            <Button 
+              type="submit" 
+              disabled={!newMessage.trim() || isSending}
+              size="lg"
+              className="shrink-0"
+            >
+              {isSending ? (
+                <Loader2 className="h-4 w-4 sm:h-5 sm:w-5 animate-spin" />
+              ) : (
+                <Send className="h-4 w-4 sm:h-5 sm:w-5" />
+              )}
             </Button>
           </form>
         </div>

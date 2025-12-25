@@ -20,6 +20,7 @@ import {
   Clock,
   ArrowRight,
   TrendingUp,
+  Sparkles,
 } from 'lucide-react'
 import { Loading } from '@/components/ui/loading'
 
@@ -60,41 +61,56 @@ export default function Dashboard() {
   }
 
   return (
-    <div className="space-y-6">
-      <div>
-        <h2 className="text-3xl font-bold tracking-tight">Dashboard</h2>
-        <p className="text-muted-foreground">
-          Overview of your team's progress and activities
-        </p>
+    <div className="space-y-8 animate-in fade-in-0 duration-500">
+      <div className="flex items-center gap-3">
+        <div className="h-12 w-12 rounded-2xl bg-gradient-to-br from-primary to-primary/60 flex items-center justify-center shadow-lg shadow-primary/25">
+          <Sparkles className="h-6 w-6 text-primary-foreground" />
+        </div>
+        <div>
+          <h2 className="text-3xl sm:text-4xl font-bold tracking-tight bg-gradient-to-r from-foreground to-foreground/60 bg-clip-text">
+            Dashboard
+          </h2>
+          <p className="text-muted-foreground text-sm sm:text-base">
+            Overview of your team's progress and activities
+          </p>
+        </div>
       </div>
 
-      <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Total Projects</CardTitle>
-            <FolderKanban className="h-4 w-4 text-muted-foreground" />
+      <div className="grid gap-4 sm:gap-6 grid-cols-1 sm:grid-cols-2 lg:grid-cols-4">
+        <Card className="hover:shadow-xl transition-all duration-300 border-2 hover:border-primary/20">
+          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-3">
+            <CardTitle className="text-sm font-semibold">Total Projects</CardTitle>
+            <div className="h-10 w-10 rounded-xl bg-blue-500/10 flex items-center justify-center">
+              <FolderKanban className="h-5 w-5 text-blue-500" />
+            </div>
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">{projects.length}</div>
-            <p className="text-xs text-muted-foreground">
+            <div className="text-3xl sm:text-4xl font-bold bg-gradient-to-br from-blue-500 to-blue-600 bg-clip-text text-transparent">
+              {projects.length}
+            </div>
+            <p className="text-xs sm:text-sm text-muted-foreground mt-1">
               Active projects in your team
             </p>
           </CardContent>
         </Card>
 
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Total Tasks</CardTitle>
-            <CheckSquare className="h-4 w-4 text-muted-foreground" />
+        <Card className="hover:shadow-xl transition-all duration-300 border-2 hover:border-primary/20">
+          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-3">
+            <CardTitle className="text-sm font-semibold">Total Tasks</CardTitle>
+            <div className="h-10 w-10 rounded-xl bg-purple-500/10 flex items-center justify-center">
+              <CheckSquare className="h-5 w-5 text-purple-500" />
+            </div>
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">{tasks.length}</div>
-            <div className="flex gap-2 mt-1">
+            <div className="text-3xl sm:text-4xl font-bold bg-gradient-to-br from-purple-500 to-purple-600 bg-clip-text text-transparent">
+              {tasks.length}
+            </div>
+            <div className="flex flex-wrap gap-1.5 sm:gap-2 mt-2">
               <Badge variant="secondary" className="text-xs">
                 {todoTasks.length} todo
               </Badge>
               <Badge variant="warning" className="text-xs">
-                {inProgressTasks.length} in progress
+                {inProgressTasks.length} active
               </Badge>
               <Badge variant="success" className="text-xs">
                 {doneTasks.length} done
@@ -103,66 +119,79 @@ export default function Dashboard() {
           </CardContent>
         </Card>
 
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Team Members</CardTitle>
-            <Users className="h-4 w-4 text-muted-foreground" />
+        <Card className="hover:shadow-xl transition-all duration-300 border-2 hover:border-primary/20">
+          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-3">
+            <CardTitle className="text-sm font-semibold">Team Members</CardTitle>
+            <div className="h-10 w-10 rounded-xl bg-green-500/10 flex items-center justify-center">
+              <Users className="h-5 w-5 text-green-500" />
+            </div>
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">{members.length}</div>
-            <p className="text-xs text-muted-foreground">
+            <div className="text-3xl sm:text-4xl font-bold bg-gradient-to-br from-green-500 to-green-600 bg-clip-text text-transparent">
+              {members.length}
+            </div>
+            <p className="text-xs sm:text-sm text-muted-foreground mt-1">
               People in your team
             </p>
           </CardContent>
         </Card>
 
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">My Tasks</CardTitle>
-            <TrendingUp className="h-4 w-4 text-muted-foreground" />
+        <Card className="hover:shadow-xl transition-all duration-300 border-2 hover:border-primary/20">
+          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-3">
+            <CardTitle className="text-sm font-semibold">My Tasks</CardTitle>
+            <div className="h-10 w-10 rounded-xl bg-orange-500/10 flex items-center justify-center">
+              <TrendingUp className="h-5 w-5 text-orange-500" />
+            </div>
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">{myTasks.length}</div>
-            <p className="text-xs text-muted-foreground">
+            <div className="text-3xl sm:text-4xl font-bold bg-gradient-to-br from-orange-500 to-orange-600 bg-clip-text text-transparent">
+              {myTasks.length}
+            </div>
+            <p className="text-xs sm:text-sm text-muted-foreground mt-1">
               Tasks assigned to you
             </p>
           </CardContent>
         </Card>
       </div>
 
-      <div className="grid gap-6 md:grid-cols-2">
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between">
-            <div>
-              <CardTitle>Recent Projects</CardTitle>
+      <div className="grid gap-6 grid-cols-1 lg:grid-cols-2">
+        <Card className="border-2">
+          <CardHeader className="flex flex-row items-center justify-between pb-4">
+            <div className="space-y-1">
+              <CardTitle className="text-xl font-bold">Recent Projects</CardTitle>
               <CardDescription>Your team's latest projects</CardDescription>
             </div>
             <Link to="/projects">
-              <Button variant="ghost" size="sm">
-                View all <ArrowRight className="ml-2 h-4 w-4" />
+              <Button variant="ghost" size="sm" className="gap-2">
+                View all <ArrowRight className="h-4 w-4" />
               </Button>
             </Link>
           </CardHeader>
           <CardContent>
             {projects.length === 0 ? (
-              <p className="text-sm text-muted-foreground text-center py-4">
-                No projects yet. Create your first project!
-              </p>
+              <div className="text-center py-8 px-4">
+                <FolderKanban className="h-12 w-12 text-muted-foreground mx-auto mb-3 opacity-50" />
+                <p className="text-sm text-muted-foreground">
+                  No projects yet. Create your first project!
+                </p>
+              </div>
             ) : (
               <div className="space-y-3">
                 {projects.slice(0, 4).map((project) => (
                   <div
                     key={project._id || project.id}
-                    className="flex items-center justify-between rounded-lg border p-3"
+                    className="group flex items-center justify-between rounded-xl border-2 p-4 hover:border-primary/30 hover:shadow-md transition-all duration-200"
                   >
-                    <div>
-                      <p className="font-medium">{project.name}</p>
+                    <div className="flex-1 min-w-0">
+                      <p className="font-semibold group-hover:text-primary transition-colors truncate">
+                        {project.name}
+                      </p>
                       <p className="text-sm text-muted-foreground line-clamp-1">
                         {project.description || 'No description'}
                       </p>
                     </div>
                     <Link to={`/projects/${project._id || project.id}`}>
-                      <Button variant="ghost" size="sm">
+                      <Button variant="ghost" size="sm" className="ml-2">
                         <ArrowRight className="h-4 w-4" />
                       </Button>
                     </Link>
@@ -173,41 +202,44 @@ export default function Dashboard() {
           </CardContent>
         </Card>
 
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between">
-            <div>
-              <CardTitle>Recent Activity</CardTitle>
+        <Card className="border-2">
+          <CardHeader className="flex flex-row items-center justify-between pb-4">
+            <div className="space-y-1">
+              <CardTitle className="text-xl font-bold">Recent Activity</CardTitle>
               <CardDescription>Latest task updates</CardDescription>
             </div>
             <Link to="/tasks">
-              <Button variant="ghost" size="sm">
-                View all <ArrowRight className="ml-2 h-4 w-4" />
+              <Button variant="ghost" size="sm" className="gap-2">
+                View all <ArrowRight className="h-4 w-4" />
               </Button>
             </Link>
           </CardHeader>
           <CardContent>
             {recentTasks.length === 0 ? (
-              <p className="text-sm text-muted-foreground text-center py-4">
-                No tasks yet. Create your first task!
-              </p>
+              <div className="text-center py-8 px-4">
+                <CheckSquare className="h-12 w-12 text-muted-foreground mx-auto mb-3 opacity-50" />
+                <p className="text-sm text-muted-foreground">
+                  No tasks yet. Create your first task!
+                </p>
+              </div>
             ) : (
               <div className="space-y-3">
                 {recentTasks.map((task) => (
                   <div
                     key={task._id || task.id}
-                    className="flex items-center gap-3 rounded-lg border p-3"
+                    className="flex items-center gap-3 rounded-xl border-2 p-4 hover:border-primary/30 hover:shadow-md transition-all duration-200"
                   >
                     <div
-                      className={`h-2 w-2 rounded-full ${
+                      className={`h-3 w-3 rounded-full shrink-0 shadow-lg ${
                         task.status === 'done'
-                          ? 'bg-green-500'
+                          ? 'bg-green-500 shadow-green-500/50'
                           : task.status === 'in-progress'
-                          ? 'bg-yellow-500'
-                          : 'bg-gray-400'
+                          ? 'bg-yellow-500 shadow-yellow-500/50'
+                          : 'bg-gray-400 shadow-gray-400/50'
                       }`}
                     />
                     <div className="flex-1 min-w-0">
-                      <p className="font-medium truncate">{task.title}</p>
+                      <p className="font-semibold truncate">{task.title}</p>
                       <div className="flex items-center gap-2 text-xs text-muted-foreground">
                         <Clock className="h-3 w-3" />
                         {new Date(task.updatedAt).toLocaleDateString()}
@@ -221,6 +253,7 @@ export default function Dashboard() {
                           ? 'warning'
                           : 'secondary'
                       }
+                      className="shrink-0"
                     >
                       {task.status}
                     </Badge>

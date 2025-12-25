@@ -29,6 +29,7 @@ import {
   Pencil,
   Trash2,
   ArrowRight,
+  Calendar,
 } from 'lucide-react'
 import {
   DropdownMenu,
@@ -125,56 +126,65 @@ export default function Projects() {
   }
 
   return (
-    <div className="space-y-6">
-      <div className="flex items-center justify-between">
-        <div>
-          <h2 className="text-3xl font-bold tracking-tight">Projects</h2>
-          <p className="text-muted-foreground">
-            Manage your team's projects and tasks
-          </p>
+    <div className="space-y-8 animate-in fade-in-0 duration-500">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+        <div className="flex items-center gap-3">
+          <div className="h-12 w-12 rounded-2xl bg-gradient-to-br from-primary to-primary/60 flex items-center justify-center shadow-lg shadow-primary/25">
+            <FolderKanban className="h-6 w-6 text-primary-foreground" />
+          </div>
+          <div>
+            <h2 className="text-3xl sm:text-4xl font-bold tracking-tight">Projects</h2>
+            <p className="text-muted-foreground text-sm sm:text-base">
+              Manage your team's projects and tasks
+            </p>
+          </div>
         </div>
         {canManageProjects && (
-          <Button onClick={() => setIsCreateOpen(true)}>
-            <Plus className="mr-2 h-4 w-4" />
+          <Button onClick={() => setIsCreateOpen(true)} size="lg" className="shrink-0">
+            <Plus className="mr-2 h-5 w-5" />
             New Project
           </Button>
         )}
       </div>
 
       {projects.length === 0 ? (
-        <Card>
-          <CardContent className="flex flex-col items-center justify-center py-12">
-            <FolderKanban className="h-12 w-12 text-muted-foreground mb-4" />
-            <h3 className="text-lg font-semibold mb-2">No projects yet</h3>
-            <p className="text-muted-foreground text-center mb-4">
-              Get started by creating your first project
+        <Card className="border-2">
+          <CardContent className="flex flex-col items-center justify-center py-16 px-4">
+            <div className="h-20 w-20 rounded-2xl bg-primary/10 flex items-center justify-center mb-6">
+              <FolderKanban className="h-10 w-10 text-primary" />
+            </div>
+            <h3 className="text-xl font-bold mb-2">No projects yet</h3>
+            <p className="text-muted-foreground text-center mb-6 max-w-sm">
+              Get started by creating your first project to organize your team's work
             </p>
             {canManageProjects && (
-              <Button onClick={() => setIsCreateOpen(true)}>
-                <Plus className="mr-2 h-4 w-4" />
+              <Button onClick={() => setIsCreateOpen(true)} size="lg">
+                <Plus className="mr-2 h-5 w-5" />
                 Create Project
               </Button>
             )}
           </CardContent>
         </Card>
       ) : (
-        <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
+        <div className="grid gap-4 sm:gap-6 grid-cols-1 md:grid-cols-2 lg:grid-cols-3">
           {projects.map((project) => (
             <Card
               key={project._id || project.id}
-              className="group hover:shadow-md transition-shadow"
+              className="group hover:shadow-2xl transition-all duration-300 border-2 hover:border-primary/30 hover:scale-[1.02]"
             >
-              <CardHeader className="flex flex-row items-start justify-between space-y-0">
-                <div className="space-y-1">
-                  <CardTitle className="line-clamp-1">{project.name}</CardTitle>
+              <CardHeader className="flex flex-row items-start justify-between space-y-0 pb-4">
+                <div className="space-y-2 flex-1 min-w-0">
+                  <CardTitle className="line-clamp-1 text-lg group-hover:text-primary transition-colors">
+                    {project.name}
+                  </CardTitle>
                   <CardDescription className="line-clamp-2">
-                    {project.description || 'No description'}
+                    {project.description || 'No description provided'}
                   </CardDescription>
                 </div>
                 {canManageProjects && (
                   <DropdownMenu>
                     <DropdownMenuTrigger asChild>
-                      <Button variant="ghost" size="icon" className="h-8 w-8">
+                      <Button variant="ghost" size="icon" className="h-8 w-8 shrink-0">
                         <MoreVertical className="h-4 w-4" />
                       </Button>
                     </DropdownMenuTrigger>
@@ -193,7 +203,7 @@ export default function Projects() {
                       </DropdownMenuItem>
                       {canDeleteProjects && (
                         <DropdownMenuItem
-                          className="text-destructive"
+                          className="text-destructive focus:text-destructive"
                           onClick={() =>
                             openDeleteDialog({
                               id: project._id || project.id,
@@ -210,14 +220,14 @@ export default function Projects() {
                 )}
               </CardHeader>
               <CardContent>
-                <div className="flex items-center justify-between">
-                  <span className="text-sm text-muted-foreground">
-                    Created{' '}
-                    {new Date(project.createdAt).toLocaleDateString()}
-                  </span>
+                <div className="flex items-center justify-between pt-2 border-t">
+                  <div className="flex items-center gap-2 text-sm text-muted-foreground">
+                    <Calendar className="h-4 w-4" />
+                    <span>{new Date(project.createdAt).toLocaleDateString()}</span>
+                  </div>
                   <Link to={`/projects/${project._id || project.id}`}>
-                    <Button variant="ghost" size="sm">
-                      View <ArrowRight className="ml-2 h-4 w-4" />
+                    <Button variant="ghost" size="sm" className="gap-2 group-hover:bg-primary group-hover:text-primary-foreground transition-colors">
+                      View <ArrowRight className="h-4 w-4" />
                     </Button>
                   </Link>
                 </div>
@@ -230,15 +240,15 @@ export default function Projects() {
       <Dialog open={isCreateOpen} onOpenChange={setIsCreateOpen}>
         <DialogContent onClose={() => setIsCreateOpen(false)}>
           <DialogHeader>
-            <DialogTitle>Create New Project</DialogTitle>
+            <DialogTitle className="text-2xl">Create New Project</DialogTitle>
             <DialogDescription>
               Add a new project to organize your team's work
             </DialogDescription>
           </DialogHeader>
           <form onSubmit={handleCreate}>
-            <div className="space-y-4 py-4">
+            <div className="space-y-5 py-4">
               <div className="space-y-2">
-                <Label htmlFor="name">Project Name</Label>
+                <Label htmlFor="name" className="text-sm font-semibold">Project Name</Label>
                 <Input
                   id="name"
                   placeholder="Enter project name"
@@ -250,7 +260,7 @@ export default function Projects() {
                 />
               </div>
               <div className="space-y-2">
-                <Label htmlFor="description">Description</Label>
+                <Label htmlFor="description" className="text-sm font-semibold">Description</Label>
                 <Textarea
                   id="description"
                   placeholder="Enter project description (optional)"
@@ -280,15 +290,15 @@ export default function Projects() {
       <Dialog open={isEditOpen} onOpenChange={setIsEditOpen}>
         <DialogContent onClose={() => setIsEditOpen(false)}>
           <DialogHeader>
-            <DialogTitle>Edit Project</DialogTitle>
+            <DialogTitle className="text-2xl">Edit Project</DialogTitle>
             <DialogDescription>
               Update the project details
             </DialogDescription>
           </DialogHeader>
           <form onSubmit={handleEdit}>
-            <div className="space-y-4 py-4">
+            <div className="space-y-5 py-4">
               <div className="space-y-2">
-                <Label htmlFor="edit-name">Project Name</Label>
+                <Label htmlFor="edit-name" className="text-sm font-semibold">Project Name</Label>
                 <Input
                   id="edit-name"
                   value={formData.name}
@@ -299,7 +309,7 @@ export default function Projects() {
                 />
               </div>
               <div className="space-y-2">
-                <Label htmlFor="edit-description">Description</Label>
+                <Label htmlFor="edit-description" className="text-sm font-semibold">Description</Label>
                 <Textarea
                   id="edit-description"
                   value={formData.description}
@@ -328,9 +338,9 @@ export default function Projects() {
       <Dialog open={isDeleteOpen} onOpenChange={setIsDeleteOpen}>
         <DialogContent onClose={() => setIsDeleteOpen(false)}>
           <DialogHeader>
-            <DialogTitle>Delete Project</DialogTitle>
-            <DialogDescription>
-              Are you sure you want to delete "{selectedProject?.name}"? This
+            <DialogTitle className="text-2xl">Delete Project</DialogTitle>
+            <DialogDescription className="text-base">
+              Are you sure you want to delete <span className="font-semibold text-foreground">"{selectedProject?.name}"</span>? This
               action cannot be undone and will delete all associated tasks.
             </DialogDescription>
           </DialogHeader>
@@ -343,6 +353,7 @@ export default function Projects() {
               onClick={handleDelete}
               disabled={isLoading}
             >
+              <Trash2 className="mr-2 h-4 w-4" />
               Delete Project
             </Button>
           </DialogFooter>
