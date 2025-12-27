@@ -287,13 +287,11 @@ export default function Settings() {
                 <Input
                   id="currentPassword"
                   type="password"
-                  placeholder="Enter current password (if set)"
+                  placeholder="Enter current password"
                   value={passwordForm.currentPassword}
                   onChange={(e) => setPasswordForm({ ...passwordForm, currentPassword: e.target.value })}
                 />
-                <p className="text-xs text-muted-foreground">
-                  Leave blank if you're using a temporary password
-                </p>
+                
               </div>
               
               <div className="space-y-2">
@@ -336,7 +334,6 @@ export default function Settings() {
           </form>
         </DialogContent>
       </Dialog>
-
       {/* Update Profile Image Dialog */}
       <Dialog open={isImageDialogOpen} onOpenChange={(open) => !open && closeImageDialog()}>
         <DialogContent onClose={closeImageDialog}>
