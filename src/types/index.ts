@@ -7,6 +7,9 @@ export interface User {
   name: string
   role: UserRole
   teamId: Team | string
+  profileImage?: string
+  isInvitedUser?: boolean
+  tempPasswordExpiry?: string
 }
 
 export interface Team {
@@ -71,4 +74,22 @@ export interface AssistantResponse {
   action: string
   response: string
   data: Task | Task[] | Project[] | null
+}
+
+export interface Notification {
+  id: string
+  _id?: string
+  userId: string
+  type: 'task_assigned' | 'task_updated' | 'message' | 'team_invite' | 'project_created' | 'mention'
+  title: string
+  message: string
+  isRead: boolean
+  link?: string
+  metadata?: {
+    taskId?: string
+    projectId?: string
+    messageId?: string
+    senderId?: string
+  }
+  createdAt: string
 }

@@ -84,11 +84,14 @@ const SelectValue: React.FC<{ placeholder?: string }> = ({ placeholder }) => {
   if (!context) throw new Error('SelectValue must be used within Select')
 
   const selectedOption = context.options.find((o) => o.value === context.value)
-  const displayText = selectedOption?.label || context.value
+  
+  // Don't show raw ObjectId - show placeholder if no label found
+  const isValidLabel = selectedOption?.label && !selectedOption.label.match(/^[a-f0-9]{24}$/i)
+  const displayText = isValidLabel ? selectedOption.label : null
 
   return (
-    <span className={cn(!context.value && 'text-muted-foreground')}>
-      {displayText || placeholder}
+    <span className={cn((!context.value || !displayText) && 'text-muted-foreground')}>
+      {displayText || placeholder || 'Select...'}
     </span>
   )
 }
@@ -130,12 +133,21 @@ const SelectItem = React.forwardRef<
   const context = React.useContext(SelectContext)
   if (!context) throw new Error('SelectItem must be used within Select')
 
-  const label = typeof children === 'string' ? children : ''
+  // Extract text content from children
+  const getTextContent = (node: React.ReactNode): string => {
+    if (typeof node === 'string') return node
+    if (typeof node === 'number') return String(node)
+    if (Array.isArray(node)) return node.map(getTextContent).join('')
+    if (React.isValidElement(node) && node.props.children) {
+      return getTextContent(node.props.children)
+    }
+    return ''
+  }
+
+  const label = getTextContent(children)
 
   React.useEffect(() => {
-    if (label || value) {
-      context.registerOption({ value, label: label || value })
-    }
+    context.registerOption({ value, label: label || value })
   }, [value, label, context.registerOption])
 
   const isSelected = context.value === value
@@ -144,7 +156,7 @@ const SelectItem = React.forwardRef<
     <div
       ref={ref}
       className={cn(
-        'relative flex w-full cursor-pointer select-none items-center rounded-lg py-2 px-3 text-sm outline-none transition-colors hover:bg-accent hover:text-accent-foreground focus:bg-accent focus:text-accent-foreground',
+        'relative flex w-full cursor-pointer select-none items-center rounded-lg py-2.5 px-3 text-sm outline-none transition-colors hover:bg-accent hover:text-accent-foreground',
         isSelected && 'bg-accent font-semibold',
         className
       )}

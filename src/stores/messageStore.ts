@@ -6,9 +6,12 @@ interface MessageState {
   messages: Message[]
   isLoading: boolean
   error: string | null
+  unreadCount: number
   fetchMessages: (params?: { limit?: number; before?: string }) => Promise<void>
   sendMessage: (content: string) => Promise<Message>
   addMessage: (message: Message) => void
+  incrementUnread: () => void
+  resetUnread: () => void
   clearError: () => void
 }
 
@@ -16,8 +19,11 @@ export const useMessageStore = create<MessageState>((set) => ({
   messages: [],
   isLoading: false,
   error: null,
+  unreadCount: 0,
 
   clearError: () => set({ error: null }),
+  incrementUnread: () => set((state) => ({ unreadCount: state.unreadCount + 1 })),
+  resetUnread: () => set({ unreadCount: 0 }),
 
   fetchMessages: async (params) => {
     set({ isLoading: true, error: null })

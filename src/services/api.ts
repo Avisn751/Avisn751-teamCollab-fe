@@ -41,11 +41,15 @@ api.interceptors.response.use(
 export const authApi = {
   register: (data: { email: string; name: string; firebaseUid: string }) =>
     api.post<AuthResponse>('/auth/register', data),
-  login: (data: { email: string; firebaseUid: string }) =>
+  login: (data: { email: string; firebaseUid?: string; password?: string }) =>
     api.post<AuthResponse>('/auth/login', data),
   getMe: () => api.get<ApiResponse<User>>('/auth/me'),
   updateProfile: (data: { name: string }) =>
     api.put<ApiResponse<User>>('/auth/profile', data),
+  changePassword: (data: { currentPassword?: string; newPassword: string }) =>
+    api.put<ApiResponse<{ message: string }>>('/auth/change-password', data),
+  updateProfileImage: (data: { profileImage: string }) =>
+    api.put<ApiResponse<User>>('/auth/profile-image', data),
 }
 
 export const projectsApi = {

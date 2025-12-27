@@ -23,6 +23,7 @@ import {
 } from '@/components/ui/dialog'
 import { Loading } from '@/components/ui/loading'
 import {
+  Loader2,
   Plus,
   FolderKanban,
   MoreVertical,
@@ -59,6 +60,26 @@ export default function Projects() {
   } | null>(null)
   const [formData, setFormData] = useState({ name: '', description: '' })
 
+  const resetFormData = () => {
+    setFormData({ name: '', description: '' })
+  }
+
+  const handleOpenCreateDialog = () => {
+    resetFormData()
+    setIsCreateOpen(true)
+  }
+
+  const handleCloseCreateDialog = () => {
+    resetFormData()
+    setIsCreateOpen(false)
+  }
+
+  const handleCloseEditDialog = () => {
+    resetFormData()
+    setSelectedProject(null)
+    setIsEditOpen(false)
+  }
+
   const canManageProjects =
     user?.role === 'ADMIN' || user?.role === 'MANAGER'
   const canDeleteProjects = user?.role === 'ADMIN'
@@ -69,10 +90,10 @@ export default function Projects() {
 
   const handleCreate = async (e: React.FormEvent) => {
     e.preventDefault()
+    if (!formData.name.trim()) return
     try {
       await createProject(formData)
-      setIsCreateOpen(false)
-      setFormData({ name: '', description: '' })
+      handleCloseCreateDialog()
     } catch {
       // Error handled in store
     }
@@ -80,12 +101,10 @@ export default function Projects() {
 
   const handleEdit = async (e: React.FormEvent) => {
     e.preventDefault()
-    if (!selectedProject) return
+    if (!selectedProject || !formData.name.trim()) return
     try {
       await updateProject(selectedProject.id, formData)
-      setIsEditOpen(false)
-      setSelectedProject(null)
-      setFormData({ name: '', description: '' })
+      handleCloseEditDialog()
     } catch {
       // Error handled in store
     }
@@ -140,7 +159,7 @@ export default function Projects() {
           </div>
         </div>
         {canManageProjects && (
-          <Button onClick={() => setIsCreateOpen(true)} size="lg" className="shrink-0">
+          <Button onClick={handleOpenCreateDialog} size="lg" className="shrink-0">
             <Plus className="mr-2 h-5 w-5" />
             New Project
           </Button>
@@ -158,7 +177,7 @@ export default function Projects() {
               Get started by creating your first project to organize your team's work
             </p>
             {canManageProjects && (
-              <Button onClick={() => setIsCreateOpen(true)} size="lg">
+              <Button onClick={handleOpenCreateDialog} size="lg">
                 <Plus className="mr-2 h-5 w-5" />
                 Create Project
               </Button>
@@ -237,8 +256,8 @@ export default function Projects() {
         </div>
       )}
 
-      <Dialog open={isCreateOpen} onOpenChange={setIsCreateOpen}>
-        <DialogContent onClose={() => setIsCreateOpen(false)}>
+      <Dialog open={isCreateOpen} onOpenChange={(open) => !open && handleCloseCreateDialog()}>
+        <DialogContent onClose={handleCloseCreateDialog}>
           <DialogHeader>
             <DialogTitle className="text-2xl">Create New Project</DialogTitle>
             <DialogDescription>
@@ -275,20 +294,25 @@ export default function Projects() {
               <Button
                 type="button"
                 variant="outline"
-                onClick={() => setIsCreateOpen(false)}
+                onClick={handleCloseCreateDialog}
               >
                 Cancel
               </Button>
-              <Button type="submit" disabled={isLoading}>
-                Create Project
+              <Button type="submit" disabled={isLoading || !formData.name.trim()}>
+                {isLoading ? (
+                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                ) : (
+                  <Plus className="mr-2 h-4 w-4" />
+                )}
+                {isLoading ? 'Creating...' : 'Create Project'}
               </Button>
             </DialogFooter>
           </form>
         </DialogContent>
       </Dialog>
 
-      <Dialog open={isEditOpen} onOpenChange={setIsEditOpen}>
-        <DialogContent onClose={() => setIsEditOpen(false)}>
+      <Dialog open={isEditOpen} onOpenChange={(open) => !open && handleCloseEditDialog()}>
+        <DialogContent onClose={handleCloseEditDialog}>
           <DialogHeader>
             <DialogTitle className="text-2xl">Edit Project</DialogTitle>
             <DialogDescription>
@@ -323,12 +347,15 @@ export default function Projects() {
               <Button
                 type="button"
                 variant="outline"
-                onClick={() => setIsEditOpen(false)}
+                onClick={handleCloseEditDialog}
               >
                 Cancel
               </Button>
-              <Button type="submit" disabled={isLoading}>
-                Save Changes
+              <Button type="submit" disabled={isLoading || !formData.name.trim()}>
+                {isLoading ? (
+                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                ) : null}
+                {isLoading ? 'Saving...' : 'Save Changes'}
               </Button>
             </DialogFooter>
           </form>
@@ -353,8 +380,12 @@ export default function Projects() {
               onClick={handleDelete}
               disabled={isLoading}
             >
-              <Trash2 className="mr-2 h-4 w-4" />
-              Delete Project
+              {isLoading ? (
+                <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+              ) : (
+                <Trash2 className="mr-2 h-4 w-4" />
+              )}
+              {isLoading ? 'Deleting...' : 'Delete Project'}
             </Button>
           </DialogFooter>
         </DialogContent>

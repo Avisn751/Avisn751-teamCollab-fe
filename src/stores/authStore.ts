@@ -17,6 +17,7 @@ interface AuthState {
   isLoading: boolean
   isAuthenticated: boolean
   error: string | null
+  inviteEmail: string | null
   login: (email: string, password: string) => Promise<void>
   register: (email: string, password: string, name: string) => Promise<void>
   loginWithGoogle: () => Promise<void>
@@ -26,6 +27,9 @@ interface AuthState {
   checkAuth: () => Promise<void>
   initializeAuth: () => () => void
   clearError: () => void
+  setInviteEmail: (email: string | null) => void
+  changePassword: (currentPassword: string | undefined, newPassword: string) => Promise<void>
+  updateProfileImage: (profileImage: string) => Promise<void>
 }
 
 export const useAuthStore = create<AuthState>()(
@@ -36,6 +40,7 @@ export const useAuthStore = create<AuthState>()(
       isLoading: true,
       isAuthenticated: false,
       error: null,
+      inviteEmail: null,
 
       setUser: (user) => set({ user, isAuthenticated: !!user }),
       setToken: (token) => {
@@ -47,10 +52,26 @@ export const useAuthStore = create<AuthState>()(
         set({ token })
       },
       clearError: () => set({ error: null }),
+      setInviteEmail: (email) => set({ inviteEmail: email }),
 
       login: async (email: string, password: string) => {
         set({ isLoading: true, error: null })
         try {
+          // First try password-only login (for invited users)
+          try {
+            const response = await authApi.login({ email, password })
+            const { user, token } = response.data.data
+            get().setToken(token)
+            set({ user, isAuthenticated: true, isLoading: false })
+            return
+          } catch (passwordError: any) {
+            // If password login fails with 401, try Firebase
+            if (passwordError.response?.status !== 401) {
+              throw passwordError
+            }
+          }
+
+          // Try Firebase login
           const firebaseResult = await signInWithEmail(email, password)
           const response = await authApi.login({
             email,
@@ -145,6 +166,30 @@ export const useAuthStore = create<AuthState>()(
           }
         })
         return unsubscribe
+      },
+
+      changePassword: async (currentPassword: string | undefined, newPassword: string) => {
+        set({ isLoading: true, error: null })
+        try {
+          await authApi.changePassword({ currentPassword, newPassword })
+          set({ isLoading: false })
+        } catch (error: unknown) {
+          const message = error instanceof Error ? error.message : 'Failed to change password'
+          set({ error: message, isLoading: false })
+          throw error
+        }
+      },
+
+      updateProfileImage: async (profileImage: string) => {
+        set({ isLoading: true, error: null })
+        try {
+          const response = await authApi.updateProfileImage({ profileImage })
+          set({ user: response.data.data, isLoading: false })
+        } catch (error: unknown) {
+          const message = error instanceof Error ? error.message : 'Failed to update profile image'
+          set({ error: message, isLoading: false })
+          throw error
+        }
       },
     }),
     {

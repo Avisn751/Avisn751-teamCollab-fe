@@ -94,7 +94,7 @@ export default function Register() {
             <div className="space-y-2">
               <Label htmlFor="name" className="text-sm font-semibold">Full Name</Label>
               <div className="relative">
-                <UserIcon className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-muted-foreground" />
+                <UserIcon className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-muted-foreground pointer-events-none z-10" />
                 <Input
                   id="name"
                   type="text"
@@ -111,7 +111,7 @@ export default function Register() {
             <div className="space-y-2">
               <Label htmlFor="email" className="text-sm font-semibold">Email Address</Label>
               <div className="relative">
-                <Mail className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-muted-foreground" />
+                <Mail className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-muted-foreground pointer-events-none z-10" />
                 <Input
                   id="email"
                   type="email"
@@ -128,7 +128,7 @@ export default function Register() {
             <div className="space-y-2">
               <Label htmlFor="password" className="text-sm font-semibold">Password</Label>
               <div className="relative">
-                <Lock className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-muted-foreground" />
+                <Lock className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-muted-foreground pointer-events-none z-10" />
                 <Input
                   id="password"
                   type="password"
@@ -145,7 +145,7 @@ export default function Register() {
             <div className="space-y-2">
               <Label htmlFor="confirmPassword" className="text-sm font-semibold">Confirm Password</Label>
               <div className="relative">
-                <Lock className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-muted-foreground" />
+                <Lock className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-muted-foreground pointer-events-none z-10" />
                 <Input
                   id="confirmPassword"
                   type="password"

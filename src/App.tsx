@@ -20,6 +20,7 @@ import Tasks from '@/pages/Tasks'
 import Chat from '@/pages/Chat'
 import Team from '@/pages/Team'
 import Assistant from '@/pages/Assistant'
+import Settings from '@/pages/Settings'
 
 function App() {
   const { checkAuth, isLoading, isAuthenticated } = useAuthStore()
@@ -67,6 +68,7 @@ function App() {
           <Route path="/chat" element={<Chat />} />
           <Route path="/team" element={<Team />} />
           <Route path="/assistant" element={<Assistant />} />
+          <Route path="/settings" element={<Settings />} />
         </Route>
 
         <Route path="/" element={<Navigate to="/dashboard" replace />} />

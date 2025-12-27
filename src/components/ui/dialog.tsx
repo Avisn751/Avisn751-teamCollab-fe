@@ -31,7 +31,7 @@ const Dialog: React.FC<DialogProps> = ({ open, onOpenChange, children }) => {
         className="fixed inset-0 bg-black/60 backdrop-blur-sm"
         onClick={() => onOpenChange(false)}
       />
-      <div className="relative z-50 animate-in zoom-in-95 duration-300">{children}</div>
+      <div className="relative z-50 w-full max-w-lg animate-in zoom-in-95 duration-300">{children}</div>
     </div>
   )
 }
@@ -39,27 +39,58 @@ const Dialog: React.FC<DialogProps> = ({ open, onOpenChange, children }) => {
 const DialogContent = React.forwardRef<
   HTMLDivElement,
   React.HTMLAttributes<HTMLDivElement> & { onClose?: () => void }
->(({ className, children, onClose, ...props }, ref) => (
-  <div
-    ref={ref}
-    className={cn(
-      'relative grid w-full max-w-lg gap-4 border-2 bg-background p-6 shadow-2xl duration-300 rounded-2xl',
-      className
-    )}
-    {...props}
-  >
-    {children}
-    {onClose && (
-      <button
-        className="absolute right-4 top-4 rounded-lg p-1 opacity-70 ring-offset-background transition-all hover:opacity-100 hover:bg-accent focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 disabled:pointer-events-none"
-        onClick={onClose}
-      >
-        <X className="h-5 w-5" />
-        <span className="sr-only">Close</span>
-      </button>
-    )}
-  </div>
-))
+>(({ className, children, onClose, ...props }, ref) => {
+  const childrenArray = React.Children.toArray(children)
+  
+  const header = childrenArray.find(
+    (child) => React.isValidElement(child) && child.type === DialogHeader
+  )
+  const footer = childrenArray.find(
+    (child) => React.isValidElement(child) && child.type === DialogFooter
+  )
+  const otherChildren = childrenArray.filter(
+    (child) => 
+      !React.isValidElement(child) || 
+      (child.type !== DialogHeader && child.type !== DialogFooter)
+  )
+
+  return (
+    <div
+      ref={ref}
+      className={cn(
+        'relative flex flex-col w-full max-w-lg h-[500px] sm:h-[550px] max-h-[90vh] border-2 bg-background shadow-2xl rounded-2xl overflow-hidden',
+        className
+      )}
+      {...props}
+    >
+      {onClose && (
+        <button
+          className="absolute right-4 top-4 rounded-lg p-1.5 opacity-70 ring-offset-background transition-all hover:opacity-100 hover:bg-accent focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 z-20"
+          onClick={onClose}
+        >
+          <X className="h-5 w-5" />
+          <span className="sr-only">Close</span>
+        </button>
+      )}
+      
+      {header && (
+        <div className="shrink-0 p-6 pb-4 border-b">
+          {header}
+        </div>
+      )}
+      
+      <div className="flex-1 overflow-y-auto p-6 py-4">
+        {otherChildren}
+      </div>
+      
+      {footer && (
+        <div className="shrink-0 p-6 pt-4 border-t bg-muted/30">
+          {footer}
+        </div>
+      )}
+    </div>
+  )
+})
 DialogContent.displayName = 'DialogContent'
 
 const DialogHeader = ({
@@ -67,10 +98,7 @@ const DialogHeader = ({
   ...props
 }: React.HTMLAttributes<HTMLDivElement>) => (
   <div
-    className={cn(
-      'flex flex-col space-y-2 text-center sm:text-left',
-      className
-    )}
+    className={cn('flex flex-col space-y-2 text-center sm:text-left', className)}
     {...props}
   />
 )
@@ -82,7 +110,7 @@ const DialogFooter = ({
 }: React.HTMLAttributes<HTMLDivElement>) => (
   <div
     className={cn(
-      'flex flex-col-reverse sm:flex-row sm:justify-end sm:space-x-2 gap-2',
+      'flex flex-col-reverse sm:flex-row sm:justify-end gap-2',
       className
     )}
     {...props}
@@ -96,10 +124,7 @@ const DialogTitle = React.forwardRef<
 >(({ className, ...props }, ref) => (
   <h2
     ref={ref}
-    className={cn(
-      'text-xl sm:text-2xl font-bold leading-none tracking-tight',
-      className
-    )}
+    className={cn('text-xl sm:text-2xl font-bold leading-none tracking-tight pr-8', className)}
     {...props}
   />
 ))

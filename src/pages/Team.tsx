@@ -48,6 +48,7 @@ import {
   UserCheck,
   Sparkles,
   Trash2,
+  Loader2,
 } from 'lucide-react'
 
 export default function Team() {
@@ -81,6 +82,30 @@ export default function Team() {
   const isManager = user?.role === 'MANAGER'
   const canManageMembers = isAdmin || isManager
 
+  const resetFormData = () => {
+    setFormData({ email: '', name: '', role: 'MEMBER' })
+  }
+
+  const handleOpenAddDialog = () => {
+    resetFormData()
+    setIsAddOpen(true)
+  }
+
+  const handleCloseAddDialog = () => {
+    resetFormData()
+    setIsAddOpen(false)
+  }
+
+  const handleCloseEditDialog = () => {
+    setSelectedMember(null)
+    setIsEditOpen(false)
+  }
+
+  const handleCloseRemoveDialog = () => {
+    setSelectedMember(null)
+    setIsRemoveOpen(false)
+  }
+
   useEffect(() => {
     fetchTeam()
     fetchMembers()
@@ -88,10 +113,10 @@ export default function Team() {
 
   const handleAdd = async (e: React.FormEvent) => {
     e.preventDefault()
+    if (!formData.email.trim()) return
     try {
       await addMember(formData)
-      setIsAddOpen(false)
-      setFormData({ email: '', name: '', role: 'MEMBER' })
+      handleCloseAddDialog()
     } catch {
       // Error handled in store
     }
@@ -102,8 +127,7 @@ export default function Team() {
     if (!selectedMember) return
     try {
       await updateMember(selectedMember.id, formData.role)
-      setIsEditOpen(false)
-      setSelectedMember(null)
+      handleCloseEditDialog()
     } catch {
       // Error handled in store
     }
@@ -113,8 +137,7 @@ export default function Team() {
     if (!selectedMember) return
     try {
       await removeMember(selectedMember.id)
-      setIsRemoveOpen(false)
-      setSelectedMember(null)
+      handleCloseRemoveDialog()
     } catch {
       // Error handled in store
     }
@@ -190,7 +213,7 @@ export default function Team() {
           </div>
         </div>
         {canManageMembers && (
-          <Button onClick={() => setIsAddOpen(true)} size="lg">
+          <Button onClick={handleOpenAddDialog} size="lg">
             <Plus className="mr-2 h-5 w-5" />
             Add Member
           </Button>
@@ -324,8 +347,8 @@ export default function Team() {
       </Card>
 
       {/* Add Member Dialog */}
-      <Dialog open={isAddOpen} onOpenChange={setIsAddOpen}>
-        <DialogContent onClose={() => setIsAddOpen(false)}>
+      <Dialog open={isAddOpen} onOpenChange={(open) => !open && handleCloseAddDialog()}>
+        <DialogContent onClose={handleCloseAddDialog}>
           <DialogHeader>
             <DialogTitle className="text-2xl flex items-center gap-2">
               <Sparkles className="h-6 w-6 text-primary" />
@@ -381,16 +404,16 @@ export default function Team() {
               </div>
             </div>
             <DialogFooter className="gap-2">
-              <Button
-                type="button"
-                variant="outline"
-                onClick={() => setIsAddOpen(false)}
-              >
+              <Button type="button" variant="outline" onClick={handleCloseAddDialog}>
                 Cancel
               </Button>
-              <Button type="submit" disabled={isLoading}>
-                <Plus className="mr-2 h-4 w-4" />
-                Add Member
+              <Button type="submit" disabled={isLoading || !formData.email.trim()}>
+                {isLoading ? (
+                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                ) : (
+                  <Plus className="mr-2 h-4 w-4" />
+                )}
+                {isLoading ? 'Adding...' : 'Add Member'}
               </Button>
             </DialogFooter>
           </form>
@@ -398,8 +421,8 @@ export default function Team() {
       </Dialog>
 
       {/* Edit Role Dialog */}
-      <Dialog open={isEditOpen} onOpenChange={setIsEditOpen}>
-        <DialogContent onClose={() => setIsEditOpen(false)}>
+      <Dialog open={isEditOpen} onOpenChange={(open) => !open && handleCloseEditDialog()}>
+        <DialogContent onClose={handleCloseEditDialog}>
           <DialogHeader>
             <DialogTitle className="text-2xl flex items-center gap-2">
               <UserCog className="h-6 w-6 text-primary" />
@@ -431,16 +454,16 @@ export default function Team() {
               </div>
             </div>
             <DialogFooter className="gap-2">
-              <Button
-                type="button"
-                variant="outline"
-                onClick={() => setIsEditOpen(false)}
-              >
+              <Button type="button" variant="outline" onClick={handleCloseEditDialog}>
                 Cancel
               </Button>
               <Button type="submit" disabled={isLoading}>
-                <Sparkles className="mr-2 h-4 w-4" />
-                Save Changes
+                {isLoading ? (
+                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                ) : (
+                  <Sparkles className="mr-2 h-4 w-4" />
+                )}
+                {isLoading ? 'Saving...' : 'Save Changes'}
               </Button>
             </DialogFooter>
           </form>
@@ -448,8 +471,8 @@ export default function Team() {
       </Dialog>
 
       {/* Remove Member Dialog */}
-      <Dialog open={isRemoveOpen} onOpenChange={setIsRemoveOpen}>
-        <DialogContent onClose={() => setIsRemoveOpen(false)}>
+      <Dialog open={isRemoveOpen} onOpenChange={(open) => !open && handleCloseRemoveDialog()}>
+        <DialogContent onClose={handleCloseRemoveDialog}>
           <DialogHeader>
             <DialogTitle className="text-2xl text-destructive flex items-center gap-2">
               <Trash2 className="h-6 w-6" />
@@ -463,16 +486,16 @@ export default function Team() {
             </DialogDescription>
           </DialogHeader>
           <DialogFooter className="gap-2">
-            <Button variant="outline" onClick={() => setIsRemoveOpen(false)}>
+            <Button variant="outline" onClick={handleCloseRemoveDialog}>
               Cancel
             </Button>
-            <Button
-              variant="destructive"
-              onClick={handleRemove}
-              disabled={isLoading}
-            >
-              <UserMinus className="mr-2 h-4 w-4" />
-              Remove Member
+            <Button variant="destructive" onClick={handleRemove} disabled={isLoading}>
+              {isLoading ? (
+                <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+              ) : (
+                <UserMinus className="mr-2 h-4 w-4" />
+              )}
+              {isLoading ? 'Removing...' : 'Remove Member'}
             </Button>
           </DialogFooter>
         </DialogContent>

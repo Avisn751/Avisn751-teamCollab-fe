@@ -2,7 +2,8 @@ import { useEffect, useRef, useState } from 'react'
 import { useMessageStore } from '@/stores/messageStore'
 import { useAuthStore } from '@/stores/authStore'
 import { useSocket } from '@/hooks/useSocket'
-import type { Message } from '@/types'
+import type { Message, User } from '@/types'
+import { UserProfileModal } from '@/components/ui/user-profile-modal'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
@@ -23,7 +24,14 @@ export default function Chat() {
   const [typingUsers, setTypingUsers] = useState<
     { userId: string; userName: string }[]
   >([])
+  const [selectedUser, setSelectedUser] = useState<User | null>(null)
+  const [isProfileOpen, setIsProfileOpen] = useState(false)
   const messagesEndRef = useRef<HTMLDivElement>(null)
+
+  const handleAvatarClick = (sender: User) => {
+    setSelectedUser(sender)
+    setIsProfileOpen(true)
+  }
   const typingTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null)
 
   useEffect(() => {
@@ -228,11 +236,14 @@ export default function Chat() {
                               isOwnMessage ? 'flex-row-reverse' : ''
                             }`}
                           >
-                            <Avatar className={`h-8 w-8 sm:h-10 sm:w-10 shrink-0 ring-2 ${
-                              isOwnMessage 
-                                ? 'ring-primary/20' 
-                                : 'ring-blue-500/20'
-                            }`}>
+                            <Avatar 
+                              className={`h-8 w-8 sm:h-10 sm:w-10 shrink-0 ring-2 cursor-pointer hover:ring-4 transition-all ${
+                                isOwnMessage 
+                                  ? 'ring-primary/20 hover:ring-primary/40' 
+                                  : 'ring-blue-500/20 hover:ring-blue-500/40'
+                              }`}
+                              onClick={() => message.senderId && handleAvatarClick(message.senderId)}
+                            >
                               <AvatarFallback className={`text-xs sm:text-sm font-semibold ${
                                 isOwnMessage
                                   ? 'bg-gradient-to-br from-primary to-primary/80 text-primary-foreground'
@@ -324,6 +335,12 @@ export default function Chat() {
           </form>
         </div>
       </Card>
+
+      <UserProfileModal
+        user={selectedUser}
+        open={isProfileOpen}
+        onOpenChange={setIsProfileOpen}
+      />
     </div>
   )
 }

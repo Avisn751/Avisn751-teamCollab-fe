@@ -1,5 +1,6 @@
 import { NavLink } from 'react-router-dom'
 import { useAuthStore } from '@/stores/authStore'
+import { useMessageStore } from '@/stores/messageStore'
 import { cn } from '@/lib/utils'
 import {
   LayoutDashboard,
@@ -20,7 +21,7 @@ const navItems = [
   { to: '/dashboard', icon: LayoutDashboard, label: 'Dashboard' },
   { to: '/projects', icon: FolderKanban, label: 'Projects' },
   { to: '/tasks', icon: CheckSquare, label: 'Tasks' },
-  { to: '/chat', icon: MessageSquare, label: 'Team Chat' },
+  { to: '/chat', icon: MessageSquare, label: 'Team Chat', badge: true },
   { to: '/team', icon: Users, label: 'Team' },
   { to: '/assistant', icon: Bot, label: 'Assistant' },
 ]
@@ -32,6 +33,7 @@ interface SidebarProps {
 
 export function Sidebar({ isOpen, onClose }: SidebarProps) {
   const { user, logout } = useAuthStore()
+  const { unreadCount } = useMessageStore()
 
   const handleLogout = async () => {
     await logout()
@@ -96,7 +98,12 @@ export function Sidebar({ isOpen, onClose }: SidebarProps) {
                   isActive ? 'scale-110' : 'group-hover:scale-110'
                 )} />
                 <span className="flex-1">{item.label}</span>
-                {isActive && (
+                {item.badge && unreadCount > 0 && (
+                  <span className="ml-auto flex h-5 min-w-5 items-center justify-center rounded-full bg-destructive text-destructive-foreground text-xs font-semibold px-1.5">
+                    {unreadCount > 99 ? '99+' : unreadCount}
+                  </span>
+                )}
+                {isActive && !item.badge && (
                   <div className="h-2 w-2 rounded-full bg-primary-foreground animate-pulse" />
                 )}
               </>

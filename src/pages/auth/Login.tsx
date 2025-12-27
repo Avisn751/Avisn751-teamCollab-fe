@@ -1,5 +1,5 @@
-import { useState } from 'react'
-import { Link, useNavigate } from 'react-router-dom'
+import { useState, useEffect } from 'react'
+import { Link, useNavigate, useSearchParams } from 'react-router-dom'
 import { useAuthStore } from '@/stores/authStore'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
@@ -16,9 +16,19 @@ import { Loader2, Mail, FolderKanban, Lock, Sparkles } from 'lucide-react'
 
 export default function Login() {
   const navigate = useNavigate()
+  const [searchParams] = useSearchParams()
+  const inviteToken = searchParams.get('invite')
   const { login, loginWithGoogle, isLoading, error, clearError } = useAuthStore()
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
+
+  useEffect(() => {
+    if (inviteToken) {
+      // The invite token contains encrypted email - we'll just show a message
+      // The actual email validation happens on the backend
+      // For now, we can show a hint that user should use the email they were invited with
+    }
+  }, [inviteToken])
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
@@ -72,11 +82,17 @@ export default function Login() {
                 <span>{error}</span>
               </div>
             )}
+            {inviteToken && (
+              <div className="bg-blue-500/10 border-2 border-blue-500/20 text-blue-600 px-4 py-3 rounded-xl text-sm flex items-start gap-2 animate-in slide-in-from-top-2">
+                <span className="font-semibold">ℹ️</span>
+                <span>Please login using the email and temporary password from your invitation.</span>
+              </div>
+            )}
             
             <div className="space-y-2">
               <Label htmlFor="email" className="text-sm font-semibold">Email Address</Label>
               <div className="relative">
-                <Mail className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-muted-foreground" />
+                <Mail className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-foreground/60 pointer-events-none" />
                 <Input
                   id="email"
                   type="email"
@@ -93,7 +109,7 @@ export default function Login() {
             <div className="space-y-2">
               <Label htmlFor="password" className="text-sm font-semibold">Password</Label>
               <div className="relative">
-                <Lock className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-muted-foreground" />
+                <Lock className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-foreground/60 pointer-events-none" />
                 <Input
                   id="password"
                   type="password"

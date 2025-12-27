@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react'
+import { useEffect, useState, useMemo } from 'react'
 import { useParams, useSearchParams } from 'react-router-dom'
 import {
   DragDropContext,
@@ -40,7 +40,7 @@ import {
   SelectValue,
 } from '@/components/ui/select'
 import { Loading } from '@/components/ui/loading'
-import { Plus, MoreVertical, Pencil, Trash2, User, GripVertical, CheckSquare, Sparkles } from 'lucide-react'
+import { Plus, MoreVertical, Pencil, Trash2, User, GripVertical, CheckSquare, Sparkles, Loader2 } from 'lucide-react'
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -53,6 +53,8 @@ const columns: { id: TaskStatus; title: string; color: string; bgColor: string; 
   { id: 'in-progress', title: 'In Progress', color: 'bg-yellow-500', bgColor: 'bg-yellow-500/10', icon: '⚡' },
   { id: 'done', title: 'Done', color: 'bg-green-500', bgColor: 'bg-green-500/10', icon: '✅' },
 ]
+
+const getTaskId = (task: Task): string => String(task._id || task.id)
 
 export default function Tasks() {
   const { projectId } = useParams()
@@ -79,6 +81,7 @@ export default function Tasks() {
   const [isEditOpen, setIsEditOpen] = useState(false)
   const [isDeleteOpen, setIsDeleteOpen] = useState(false)
   const [selectedTask, setSelectedTask] = useState<Task | null>(null)
+  const [filterByUser, setFilterByUser] = useState<string>('')
   const [formData, setFormData] = useState({
     title: '',
     description: '',
@@ -116,13 +119,51 @@ export default function Tasks() {
     }
   }, [on, off, addTask, updateTaskInStore, removeTask])
 
-  const filteredTasks = filterProjectId
-    ? tasks.filter((t) => {
-        const taskProjectId =
-          typeof t.projectId === 'string' ? t.projectId : t.projectId?._id || t.projectId?.id
-        return taskProjectId === filterProjectId
+  const resetFormData = () => {
+    setFormData({
+      title: '',
+      description: '',
+      status: 'todo',
+      priority: 'medium',
+      projectId: '',
+      assignedTo: '',
+    })
+  }
+
+  const handleOpenCreateDialog = () => {
+    resetFormData()
+    setIsCreateOpen(true)
+  }
+
+  const handleCloseCreateDialog = () => {
+    resetFormData()
+    setIsCreateOpen(false)
+  }
+
+  const handleCloseEditDialog = () => {
+    resetFormData()
+    setSelectedTask(null)
+    setIsEditOpen(false)
+  }
+
+  const filteredTasks = useMemo(() => {
+    let result = filterProjectId
+      ? tasks.filter((t) => {
+          const taskProjectId =
+            typeof t.projectId === 'string' ? t.projectId : t.projectId?._id || t.projectId?.id
+          return taskProjectId === filterProjectId
+        })
+      : tasks
+    
+    if (filterByUser) {
+      result = result.filter((t) => {
+        const assignedId = t.assignedTo?._id || t.assignedTo?.id
+        return assignedId === filterByUser
       })
-    : tasks
+    }
+    
+    return result
+  }, [tasks, filterProjectId, filterByUser])
 
   const getTasksByStatus = (status: TaskStatus) =>
     filteredTasks.filter((t) => t.status === status)
@@ -130,21 +171,27 @@ export default function Tasks() {
   const handleDragEnd = async (result: DropResult) => {
     if (!result.destination) return
 
-    const { draggableId, destination } = result
+    const { draggableId, source, destination } = result
     const newStatus = destination.droppableId as TaskStatus
+    const oldStatus = source.droppableId as TaskStatus
 
-    const task = tasks.find((t) => (t._id || t.id) === draggableId)
-    if (!task || task.status === newStatus) return
+    if (oldStatus === newStatus && source.index === destination.index) return
+
+    const task = tasks.find((t) => getTaskId(t) === draggableId)
+    if (!task) return
+
+    updateTaskInStore({ ...task, status: newStatus })
 
     try {
       await updateTask(draggableId, { status: newStatus })
     } catch {
-      // Revert on error
+      updateTaskInStore({ ...task, status: oldStatus })
     }
   }
 
   const handleCreate = async (e: React.FormEvent) => {
     e.preventDefault()
+    if (!formData.title.trim()) return
     const projectIdToUse = formData.projectId || filterProjectId || projects[0]?._id || projects[0]?.id
     if (!projectIdToUse) return
 
@@ -154,15 +201,7 @@ export default function Tasks() {
         projectId: projectIdToUse,
         assignedTo: formData.assignedTo || undefined,
       })
-      setIsCreateOpen(false)
-      setFormData({
-        title: '',
-        description: '',
-        status: 'todo',
-        priority: 'medium',
-        projectId: '',
-        assignedTo: '',
-      })
+      handleCloseCreateDialog()
     } catch {
       // Error handled in store
     }
@@ -170,7 +209,7 @@ export default function Tasks() {
 
   const handleEdit = async (e: React.FormEvent) => {
     e.preventDefault()
-    if (!selectedTask) return
+    if (!selectedTask || !formData.title.trim()) return
 
     try {
       await updateTask(selectedTask._id || selectedTask.id, {
@@ -180,8 +219,7 @@ export default function Tasks() {
         priority: formData.priority,
         assignedTo: formData.assignedTo || null,
       })
-      setIsEditOpen(false)
-      setSelectedTask(null)
+      handleCloseEditDialog()
     } catch {
       // Error handled in store
     }
@@ -259,10 +297,25 @@ export default function Tasks() {
             </p>
           </div>
         </div>
-        <Button onClick={() => setIsCreateOpen(true)} size="lg">
-          <Plus className="mr-2 h-5 w-5" />
-          New Task
-        </Button>
+        <div className="flex items-center gap-3">
+          <Select value={filterByUser} onValueChange={setFilterByUser}>
+            <SelectTrigger className="w-[180px]">
+              <SelectValue placeholder="All Users" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="">All Users</SelectItem>
+              {members.map((member) => (
+                <SelectItem key={member._id || member.id} value={member._id || member.id}>
+                  {member.name}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+          <Button onClick={handleOpenCreateDialog} size="lg">
+            <Plus className="mr-2 h-5 w-5" />
+            New Task
+          </Button>
+        </div>
       </div>
 
       <DragDropContext onDragEnd={handleDragEnd}>
@@ -277,7 +330,7 @@ export default function Tasks() {
                 </Badge>
               </div>
 
-              <Droppable droppableId={column.id}>
+              <Droppable droppableId={column.id} type="TASK">
                 {(provided, snapshot) => (
                   <div
                     ref={provided.innerRef}
@@ -295,8 +348,8 @@ export default function Tasks() {
                     ) : (
                       getTasksByStatus(column.id).map((task, index) => (
                         <Draggable
-                          key={task._id || task.id}
-                          draggableId={task._id || task.id}
+                          key={getTaskId(task)}
+                          draggableId={getTaskId(task)}
                           index={index}
                         >
                           {(provided, snapshot) => (
@@ -384,8 +437,8 @@ export default function Tasks() {
       </DragDropContext>
 
       {/* Create Task Dialog */}
-      <Dialog open={isCreateOpen} onOpenChange={setIsCreateOpen}>
-        <DialogContent onClose={() => setIsCreateOpen(false)} className="max-w-2xl">
+      <Dialog open={isCreateOpen} onOpenChange={(open) => !open && handleCloseCreateDialog()}>
+        <DialogContent onClose={handleCloseCreateDialog} className="max-w-2xl">
           <DialogHeader>
             <DialogTitle className="text-2xl flex items-center gap-2">
               <Sparkles className="h-6 w-6 text-primary" />
@@ -489,13 +542,17 @@ export default function Tasks() {
               <Button
                 type="button"
                 variant="outline"
-                onClick={() => setIsCreateOpen(false)}
+                onClick={handleCloseCreateDialog}
               >
                 Cancel
               </Button>
-              <Button type="submit" disabled={isLoading}>
-                <Plus className="mr-2 h-4 w-4" />
-                Create Task
+              <Button type="submit" disabled={isLoading || !formData.title.trim()}>
+                {isLoading ? (
+                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                ) : (
+                  <Plus className="mr-2 h-4 w-4" />
+                )}
+                {isLoading ? 'Creating...' : 'Create Task'}
               </Button>
             </DialogFooter>
           </form>
@@ -503,8 +560,8 @@ export default function Tasks() {
       </Dialog>
 
       {/* Edit Task Dialog */}
-      <Dialog open={isEditOpen} onOpenChange={setIsEditOpen}>
-        <DialogContent onClose={() => setIsEditOpen(false)} className="max-w-2xl">
+      <Dialog open={isEditOpen} onOpenChange={(open) => !open && handleCloseEditDialog()}>
+        <DialogContent onClose={handleCloseEditDialog} className="max-w-2xl">
           <DialogHeader>
             <DialogTitle className="text-2xl flex items-center gap-2">
               <Pencil className="h-6 w-6 text-primary" />
@@ -597,13 +654,17 @@ export default function Tasks() {
               <Button
                 type="button"
                 variant="outline"
-                onClick={() => setIsEditOpen(false)}
+                onClick={handleCloseEditDialog}
               >
                 Cancel
               </Button>
-              <Button type="submit" disabled={isLoading}>
-                <Sparkles className="mr-2 h-4 w-4" />
-                Save Changes
+              <Button type="submit" disabled={isLoading || !formData.title.trim()}>
+                {isLoading ? (
+                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                ) : (
+                  <Sparkles className="mr-2 h-4 w-4" />
+                )}
+                {isLoading ? 'Saving...' : 'Save Changes'}
               </Button>
             </DialogFooter>
           </form>
@@ -633,8 +694,12 @@ export default function Tasks() {
               onClick={handleDelete}
               disabled={isLoading}
             >
-              <Trash2 className="mr-2 h-4 w-4" />
-              Delete Task
+              {isLoading ? (
+                <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+              ) : (
+                <Trash2 className="mr-2 h-4 w-4" />
+              )}
+              {isLoading ? 'Deleting...' : 'Delete Task'}
             </Button>
           </DialogFooter>
         </DialogContent>
