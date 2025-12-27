@@ -74,7 +74,7 @@ export default function Register() {
               <FolderKanban className="h-8 w-8 text-primary-foreground" />
             </div>
           </div>
-          <CardTitle className="text-3xl font-bold bg-gradient-to-r from-primary to-primary/60 bg-clip-text text-transparent">
+          <CardTitle className="text-3xl font-bold text-foreground">
             Create an account ✨
           </CardTitle>
           <CardDescription className="text-base">

@@ -43,6 +43,8 @@ export const authApi = {
     api.post<AuthResponse>('/auth/register', data),
   login: (data: { email: string; firebaseUid?: string; password?: string }) =>
     api.post<AuthResponse>('/auth/login', data),
+  verifyEmail: (data: { token: string }) =>
+    api.post<ApiResponse<{ message: string }>>('/auth/verify-email', data),
   getMe: () => api.get<ApiResponse<User>>('/auth/me'),
   updateProfile: (data: { name: string }) =>
     api.put<ApiResponse<User>>('/auth/profile', data),

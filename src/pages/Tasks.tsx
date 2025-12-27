@@ -119,6 +119,14 @@ export default function Tasks() {
     }
   }, [on, off, addTask, updateTaskInStore, removeTask])
 
+  // Reset form data when modals open/close
+  useEffect(() => {
+    if (!isCreateOpen && !isEditOpen) {
+      resetFormData()
+      setSelectedTask(null)
+    }
+  }, [isCreateOpen, isEditOpen])
+
   const resetFormData = () => {
     setFormData({
       title: '',

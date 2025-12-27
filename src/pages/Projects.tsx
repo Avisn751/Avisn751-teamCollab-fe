@@ -64,13 +64,23 @@ export default function Projects() {
     setFormData({ name: '', description: '' })
   }
 
+  // Reset form data when modals open/close
+  useEffect(() => {
+    if (!isCreateOpen && !isEditOpen) {
+      resetFormData()
+      setSelectedProject(null)
+    }
+  }, [isCreateOpen, isEditOpen])
+
   const handleOpenCreateDialog = () => {
     resetFormData()
+    setSelectedProject(null)
     setIsCreateOpen(true)
   }
 
   const handleCloseCreateDialog = () => {
     resetFormData()
+    setSelectedProject(null)
     setIsCreateOpen(false)
   }
 

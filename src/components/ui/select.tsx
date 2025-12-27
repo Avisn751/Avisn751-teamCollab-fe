@@ -134,15 +134,18 @@ const SelectItem = React.forwardRef<
   if (!context) throw new Error('SelectItem must be used within Select')
 
   // Extract text content from children
-  const getTextContent = (node: React.ReactNode): string => {
-    if (typeof node === 'string') return node
-    if (typeof node === 'number') return String(node)
-    if (Array.isArray(node)) return node.map(getTextContent).join('')
-    if (React.isValidElement(node) && node.props.children) {
-      return getTextContent(node.props.children)
+const getTextContent = (node: React.ReactNode): string => {
+  if (typeof node === 'string') return node
+  if (typeof node === 'number') return String(node)
+  if (Array.isArray(node)) return node.map(getTextContent).join('')
+  if (React.isValidElement(node)) {
+    const props = node.props as { children?: React.ReactNode }
+    if (props.children) {
+      return getTextContent(props.children)
     }
-    return ''
   }
+  return ''
+}
 
   const label = getTextContent(children)
 

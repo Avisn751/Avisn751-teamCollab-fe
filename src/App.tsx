@@ -13,6 +13,7 @@ import { PageLoading } from '@/components/ui/loading'
 
 import Login from '@/pages/auth/Login'
 import Register from '@/pages/auth/Register'
+import VerifyEmail from '@/pages/auth/VerifyEmail'
 import Dashboard from '@/pages/Dashboard'
 import Projects from '@/pages/Projects'
 import ProjectDetail from '@/pages/ProjectDetail'
@@ -50,6 +51,16 @@ function App() {
               <Navigate to="/dashboard" replace />
             ) : (
               <Register />
+            )
+          }
+        />
+        <Route
+          path="/verify-email"
+          element={
+            isAuthenticated ? (
+              <Navigate to="/dashboard" replace />
+            ) : (
+              <VerifyEmail />
             )
           }
         />
