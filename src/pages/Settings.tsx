@@ -337,16 +337,6 @@ export default function Settings() {
         </DialogContent>
       </Dialog>
 
-          {/* Small Toast */}
-          {toastMessage && (
-            <div className="fixed right-6 bottom-6 z-50">
-              <div className="bg-primary/95 text-primary-foreground px-4 py-2 rounded-lg shadow-lg flex items-center gap-2">
-                <Check className="h-4 w-4" />
-                <span className="text-sm">{toastMessage}</span>
-              </div>
-            </div>
-          )}
-
       {/* Update Profile Image Dialog */}
       <Dialog open={isImageDialogOpen} onOpenChange={(open) => !open && closeImageDialog()}>
         <DialogContent onClose={closeImageDialog}>
