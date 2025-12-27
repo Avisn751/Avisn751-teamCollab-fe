@@ -1,6 +1,7 @@
 import { useEffect, useRef, useCallback } from 'react'
 import { io, Socket } from 'socket.io-client'
 import { useAuthStore } from '@/stores/authStore'
+import { useNotificationStore } from '@/stores/notificationStore'
 
 const SOCKET_URL = import.meta.env.VITE_SOCKET_URL || 'http://localhost:5000'
 
@@ -21,10 +22,24 @@ export function useSocket() {
       console.log('Socket connected')
       const teamId = typeof user.teamId === 'string' ? user.teamId : user.teamId._id || user.teamId.id
       socket.emit('join-team', teamId)
+      // Join a personal room so server can emit user-specific events
+      const userId = user._id || (user.id as any) || (user && (user as any).id)
+      if (userId) {
+        socket.emit('join-user', userId)
+      }
     })
 
     socket.on('disconnect', () => {
       console.log('Socket disconnected')
+    })
+
+    // Handle incoming personal notifications and add to notification store
+    socket.on('notification:new', (notification: any) => {
+      try {
+        useNotificationStore.getState().addNotification(notification)
+      } catch (err) {
+        console.error('Failed to add incoming notification:', err)
+      }
     })
 
     return () => {

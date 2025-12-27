@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react'
 import { useAuthStore } from '@/stores/authStore'
+import useToastStore from '@/stores/toastStore'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
@@ -34,10 +35,13 @@ export default function Settings() {
     confirmPassword: '',
   })
   const [imageUrl, setImageUrl] = useState('')
+  const [imageFile, setImageFile] = useState<File | null>(null)
+  const [imagePreview, setImagePreview] = useState<string | null>(null)
   const [newName, setNewName] = useState('')
   const [successMessage, setSuccessMessage] = useState('')
   const [localError, setLocalError] = useState('')
   const [isSaving, setIsSaving] = useState(false)
+  const toast = useToastStore()
 
   useEffect(() => {
     if (user?.name) {
@@ -57,6 +61,8 @@ export default function Settings() {
     setSuccessMessage(message)
     setTimeout(() => setSuccessMessage(''), 3000)
   }
+
+  const showToast = (message: string, type: 'success' | 'error' = 'success') => toast.showToast(message, type)
 
   const handlePasswordChange = async (e: React.FormEvent) => {
     e.preventDefault()
@@ -86,18 +92,44 @@ export default function Settings() {
 
   const handleImageUpdate = async (e: React.FormEvent) => {
     e.preventDefault()
-    if (!imageUrl.trim()) return
+    if (!imageUrl.trim() && !imageFile) return
 
     setIsSaving(true)
     try {
-      await updateProfileImage(imageUrl)
+      // If a file is provided, convert to base64 data URL
+      if (imageFile) {
+        const dataUrl = await new Promise<string>((resolve, reject) => {
+          const reader = new FileReader()
+          reader.onload = () => resolve(String(reader.result))
+          reader.onerror = reject
+          reader.readAsDataURL(imageFile)
+        })
+        await updateProfileImage(dataUrl)
+      } else {
+        await updateProfileImage(imageUrl)
+      }
+
       closeImageDialog()
       showSuccess('Profile image updated!')
-    } catch {
+      showToast('Profile image uploaded', 'success')
+    } catch (err) {
+      console.error(err)
       setLocalError('Failed to update profile image')
     } finally {
       setIsSaving(false)
     }
+  }
+
+  const handleFileChange = (file?: File) => {
+    if (!file) {
+      setImageFile(null)
+      setImagePreview(null)
+      return
+    }
+    setImageFile(file)
+    const reader = new FileReader()
+    reader.onload = () => setImagePreview(String(reader.result))
+    reader.readAsDataURL(file)
   }
 
   const handleNameUpdate = async (e: React.FormEvent) => {
@@ -305,6 +337,16 @@ export default function Settings() {
         </DialogContent>
       </Dialog>
 
+          {/* Small Toast */}
+          {toastMessage && (
+            <div className="fixed right-6 bottom-6 z-50">
+              <div className="bg-primary/95 text-primary-foreground px-4 py-2 rounded-lg shadow-lg flex items-center gap-2">
+                <Check className="h-4 w-4" />
+                <span className="text-sm">{toastMessage}</span>
+              </div>
+            </div>
+          )}
+
       {/* Update Profile Image Dialog */}
       <Dialog open={isImageDialogOpen} onOpenChange={(open) => !open && closeImageDialog()}>
         <DialogContent onClose={closeImageDialog}>
@@ -314,7 +356,7 @@ export default function Settings() {
               Update Profile Image
             </DialogTitle>
             <DialogDescription>
-              Enter a URL for your profile image
+              Upload an image file or provide an image URL. Files will be sent as base64.
             </DialogDescription>
           </DialogHeader>
           <form onSubmit={handleImageUpdate}>
@@ -327,21 +369,37 @@ export default function Settings() {
               )}
               
               <div className="space-y-2">
-                <Label htmlFor="imageUrl">Image URL</Label>
+                <Label htmlFor="imageFile">Upload Image File</Label>
+                <input
+                  id="imageFile"
+                  type="file"
+                  accept="image/*"
+                  onChange={(e) => handleFileChange(e.target.files?.[0])}
+                  className="block w-full"
+                />
+              </div>
+
+              <div className="space-y-2">
+                <Label htmlFor="imageUrl">Or Image URL</Label>
                 <Input
                   id="imageUrl"
                   type="url"
                   placeholder="https://example.com/your-image.jpg"
                   value={imageUrl}
-                  onChange={(e) => setImageUrl(e.target.value)}
-                  required
+                  onChange={(e) => {
+                    setImageUrl(e.target.value)
+                    if (e.target.value) {
+                      setImageFile(null)
+                      setImagePreview(e.target.value)
+                    }
+                  }}
                 />
               </div>
-              
-              {imageUrl && (
+
+              {(imagePreview || imageUrl) && (
                 <div className="flex justify-center">
                   <Avatar className="h-24 w-24 ring-2 ring-primary/20">
-                    <AvatarImage src={imageUrl} alt="Preview" />
+                    <AvatarImage src={imagePreview || imageUrl} alt="Preview" />
                     <AvatarFallback>Preview</AvatarFallback>
                   </Avatar>
                 </div>

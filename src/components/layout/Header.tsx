@@ -58,11 +58,23 @@ export function Header({ onMenuClick }: HeaderProps) {
   }
 
   const handleNotificationClick = async (notification: any) => {
-    await markAsRead(notification._id || notification.id)
-    if (notification.link) {
-      navigate(notification.link)
+    try {
+      // close UI immediately for snappy UX
+      setIsNotificationOpen(false)
+      await markAsRead(notification._id || notification.id)
+
+      if (notification.link) {
+        const link: string = notification.link
+        if (link.startsWith('http://') || link.startsWith('https://')) {
+          window.open(link, '_blank')
+        } else {
+          navigate(link)
+        }
+      }
+    } catch (err) {
+      console.error('Error handling notification click:', err)
+      setIsNotificationOpen(false)
     }
-    setIsNotificationOpen(false)
   }
 
   const getNotificationIcon = (type: string) => {

@@ -56,11 +56,11 @@ const DialogContent = React.forwardRef<
 
   return (
     <div
-      ref={ref}
-      className={cn(
-        'relative flex flex-col w-full max-w-lg h-[500px] sm:h-[550px] max-h-[90vh] border-2 bg-background shadow-2xl rounded-2xl overflow-hidden',
-        className
-      )}
+        ref={ref}
+        className={cn(
+          'relative flex flex-col w-full max-w-lg h-[500px] sm:h-[550px] max-h-[90vh] border-2 bg-background shadow-2xl rounded-2xl overflow-hidden',
+          className
+        )}
       {...props}
     >
       {onClose && (
@@ -79,12 +79,12 @@ const DialogContent = React.forwardRef<
         </div>
       )}
       
-      <div className="flex-1 overflow-y-auto p-6 py-4">
+      <div className="flex-1 overflow-y-auto p-6 py-4 pb-24">
         {otherChildren}
       </div>
       
       {footer && (
-        <div className="shrink-0 p-6 pt-4 border-t bg-muted/30">
+        <div className="shrink-0 sticky bottom-0 z-20 p-6 pt-4 border-t bg-muted/60 backdrop-blur">
           {footer}
         </div>
       )}
