@@ -56,10 +56,14 @@ export const useTaskStore = create<TaskState>((set) => ({
     try {
       const response = await tasksApi.create(data)
       const newTask = response.data.data
-      set((state) => ({
-        tasks: [newTask, ...state.tasks],
-        isLoading: false,
-      }))
+      set((state) => {
+        const exists = state.tasks.some((t) => (t._id || t.id) === (newTask._id || newTask.id))
+        if (exists) return { isLoading: false }
+        return {
+          tasks: [newTask, ...state.tasks],
+          isLoading: false,
+        }
+      })
       return newTask
     } catch (error: unknown) {
       const message = error instanceof Error ? error.message : 'Failed to create task'

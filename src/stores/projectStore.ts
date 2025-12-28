@@ -53,10 +53,14 @@ export const useProjectStore = create<ProjectState>((set, get) => ({
     try {
       const response = await projectsApi.create(data)
       const newProject = response.data.data
-      set((state) => ({
-        projects: [newProject, ...state.projects],
-        isLoading: false,
-      }))
+      set((state) => {
+        const exists = state.projects.some((p) => (p._id || p.id) === (newProject._id || newProject.id))
+        if (exists) return { isLoading: false }
+        return {
+          projects: [newProject, ...state.projects],
+          isLoading: false,
+        }
+      })
       return newProject
     } catch (error: unknown) {
       const message = error instanceof Error ? error.message : 'Failed to create project'

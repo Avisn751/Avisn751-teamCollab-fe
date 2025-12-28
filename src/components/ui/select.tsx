@@ -102,8 +102,10 @@ const SelectContent = React.forwardRef<
 >(({ className, children, ...props }, ref) => {
   const context = React.useContext(SelectContext)
   if (!context) throw new Error('SelectContent must be used within Select')
-
-  if (!context.open) return null
+  if (!context.open) {
+    // Still render children hidden so options register for SelectValue
+    return <div className="hidden" aria-hidden>{children}</div>
+  }
 
   return (
     <>
